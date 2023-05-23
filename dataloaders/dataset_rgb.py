@@ -5,9 +5,34 @@ import torch
 from utils import is_png_file, load_img, Augment_RGB_torch
 import torch.nn.functional as F
 import random
+import pandas as pd
+from PIL import Image
 
 augment   = Augment_RGB_torch()
 transforms_aug = [method for method in dir(augment) if callable(getattr(augment, method)) if not method.startswith('_')] 
+
+
+class DataLoaderUTB180(Dataset):
+    def __init__(self, csv_file, dataset_dir, img_options=None):
+        super(DataLoaderUTB180, self).__init__()
+        self.base_dir = dataset_dir
+        self.data = pd.read_csv(csv_file)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        image_data = self.data.iloc[idx]
+        
+        clean_path = image_data['clean']
+        noisy_path = image_data['noisy']
+
+        clean_image = Image.open(clean_path)
+        noisy_image = Image.open(noisy_path)
+        
+        return clean_image, noisy_image, clean_path, noisy_path
+
+
 
 ##################################################################################################
 class DataLoaderTrain(Dataset):
